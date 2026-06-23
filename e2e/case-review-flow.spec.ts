@@ -6,6 +6,7 @@ test("analyst reviews case and records approval", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Review dashboard" })).toBeVisible();
   await expect(page.getByText("Demo environment")).toBeVisible();
 
+  await page.getByRole("searchbox").fill("DD-2026-01482");
   await page.getByRole("link", { name: "Open case DD-2026-01482" }).click();
   await expect(page.getByRole("heading", { name: "DD-2026-01482" })).toBeVisible();
 
