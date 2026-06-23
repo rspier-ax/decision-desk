@@ -95,5 +95,6 @@ See [docs/README.md](./docs/README.md) for full documentation.
 | [docs/README.md](./docs/README.md) | Documentation index |
 | [docs/architecture/ARCHITECTURE.md](./docs/architecture/ARCHITECTURE.md) | Stack, boundaries, trade-offs |
 | [docs/frontend-standards.md](./docs/frontend-standards.md) | Component and testing standards |
-| [docs/ai-assisted-development.md](./docs/ai-assisted-development.md) | AI-assisted engineering practice |
+| [docs/engineering-practice.md](./docs/engineering-practice.md) | Implementation and review workflow |
+| [AGENTS.md](./AGENTS.md) | Repository guide — stack, boundaries, validation |
 | [docs/decisions/0001-risk-provider-abstraction.md](./docs/decisions/0001-risk-provider-abstraction.md) | ADR: RiskProvider |
