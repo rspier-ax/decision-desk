@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { decisionInputSchema } from "@/schemas/case.schema";
 import { useSubmitDecision } from "@/features/decisions/hooks/use-submit-decision";
@@ -9,6 +9,9 @@ import type { DecisionAction } from "@/services/risk-provider/types";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Panel } from "@/components/ui/panel";
+import { DropdownSelect } from "@/components/ui/dropdown-select";
+import { formControlClassName } from "@/lib/form-control";
+import { cn } from "@/lib/cn";
 
 const ANALYST_ID = "analyst.jdoe";
 
@@ -29,6 +32,7 @@ export function DecisionForm({
 
   const {
     register,
+    control,
     handleSubmit,
     getValues,
     formState: { errors },
@@ -62,16 +66,23 @@ export function DecisionForm({
       <Panel title="Record decision">
         <form className="space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
           <Field label="Decision" htmlFor="action" error={errors.action?.message}>
-            <select
-              id="action"
-              disabled={isClosed}
-              className="w-full border border-slate-300 px-2 py-1.5 text-sm disabled:bg-slate-50"
-              {...register("action")}
-            >
-              <option value="approve">Approve</option>
-              <option value="reject">Reject</option>
-              <option value="escalate">Escalate</option>
-            </select>
+            <Controller
+              name="action"
+              control={control}
+              render={({ field }) => (
+                <DropdownSelect
+                  id="action"
+                  value={field.value}
+                  onChange={field.onChange}
+                  disabled={isClosed}
+                  options={[
+                    { value: "approve", label: "Approve" },
+                    { value: "reject", label: "Reject" },
+                    { value: "escalate", label: "Escalate" },
+                  ]}
+                />
+              )}
+            />
           </Field>
 
           <Field
@@ -83,7 +94,7 @@ export function DecisionForm({
               id="justification"
               rows={4}
               disabled={isClosed}
-              className="w-full border border-slate-300 px-2 py-1.5 text-sm disabled:bg-slate-50"
+              className={cn(formControlClassName, "h-auto py-2")}
               aria-invalid={Boolean(errors.justification)}
               aria-describedby={errors.justification ? "justification-error" : undefined}
               {...register("justification")}
@@ -96,7 +107,7 @@ export function DecisionForm({
             </p>
           ) : null}
 
-          <Button type="submit" variant="primary" disabled={isClosed}>
+          <Button type="submit" variant="primary" className="w-full" disabled={isClosed}>
             Submit decision
           </Button>
         </form>

@@ -47,6 +47,7 @@ UI and features call the provider (or its hooks); do not fetch vendor APIs from 
 
 ## Quality expectations
 
+- Desktop/tablet viewport ≥768px; no mobile layout.
 - Loading, empty, and error states on data-bound UI; retry when recoverable.
 - Decisions require justification and confirmation; audit history is append-only.
 - Read existing code before adding services, hooks, or components.

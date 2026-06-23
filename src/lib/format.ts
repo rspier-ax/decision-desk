@@ -15,6 +15,10 @@ export function formatRelativeSla(iso: string): string {
   return `${Math.round(hours / 24)}d remaining`;
 }
 
+export function isSlaOverdue(iso: string): boolean {
+  return new Date(iso).getTime() < Date.now();
+}
+
 export function formatPercent(value: number): string {
   return `${Math.round(value * 100)}%`;
 }

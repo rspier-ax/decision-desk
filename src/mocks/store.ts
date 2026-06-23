@@ -46,10 +46,27 @@ function matchesFilters(caseItem: RiskCase, filters?: CaseFilters): boolean {
   return true;
 }
 
+function toRiskCaseSummary(caseDetail: RiskCaseDetail): RiskCase {
+  return {
+    id: caseDetail.id,
+    applicantName: caseDetail.applicantName,
+    productType: caseDetail.productType,
+    submittedAt: caseDetail.submittedAt,
+    riskLevel: caseDetail.riskLevel,
+    riskScore: caseDetail.riskScore,
+    status: caseDetail.status,
+    assignee: caseDetail.assignee,
+    slaDueAt: caseDetail.slaDueAt,
+    suggestedAction: caseDetail.suggestedAction,
+    modelConfidence: caseDetail.modelConfidence,
+    signalCount: caseDetail.signalCount,
+  };
+}
+
 export function listCasesFromStore(filters?: CaseFilters): RiskCase[] {
   return caseStore
     .filter((c) => matchesFilters(c, filters))
-    .map(({ signals: _s, timeline: _t, auditHistory: _a, applicant: _ap, decisionRationale: _d, rulesetVersion: _r, ...summary }) => summary)
+    .map(toRiskCaseSummary)
     .sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
 }
 
