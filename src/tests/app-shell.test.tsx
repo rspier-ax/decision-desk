@@ -13,5 +13,10 @@ describe("AppShell", () => {
     expect(screen.getByText("Demo environment")).toBeInTheDocument();
     expect(screen.getByText("Dashboard content")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "DecisionDesk" })).toBeInTheDocument();
+
+    const main = screen.getByRole("main");
+    expect(main.className).not.toMatch(/max-w-/);
+    expect(main.className).not.toContain("mx-auto");
+    expect(main.className).toContain("px-8");
   });
 });

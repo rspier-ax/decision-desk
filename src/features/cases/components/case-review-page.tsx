@@ -30,7 +30,7 @@ export function CaseReviewPage({ caseId }: { caseId: string }) {
   const isClosed = data.status === "approved" || data.status === "rejected";
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <nav aria-label="Breadcrumb">
         <Link href="/" className="text-sm text-slate-600 hover:text-slate-900">
           ← Back to dashboard
@@ -38,13 +38,20 @@ export function CaseReviewPage({ caseId }: { caseId: string }) {
       </nav>
 
       <CaseHeader caseDetail={data} />
-      <SuggestedActionBar caseDetail={data} />
-      <RiskSignalsTable caseDetail={data} />
-      <ApplicantPanel caseDetail={data} />
-      <EventTimeline events={data.timeline} />
-      <CaseSummaryPanel caseId={data.id} />
-      <DecisionForm caseId={data.id} disabled={isClosed} />
-      <AuditTimeline entries={data.auditHistory} />
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="space-y-4 lg:col-span-2">
+          <SuggestedActionBar caseDetail={data} />
+          <RiskSignalsTable caseDetail={data} />
+          <ApplicantPanel caseDetail={data} />
+          <EventTimeline events={data.timeline} />
+        </div>
+        <div className="space-y-4 lg:sticky lg:top-6 lg:col-span-1 lg:self-start">
+          <CaseSummaryPanel caseId={data.id} />
+          <DecisionForm caseId={data.id} disabled={isClosed} />
+          <AuditTimeline entries={data.auditHistory} />
+        </div>
+      </div>
     </div>
   );
 }

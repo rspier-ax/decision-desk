@@ -1,5 +1,11 @@
 # Frontend standards
 
+## Layout and viewport
+
+- **Minimum viewport:** 768px. Below that width, the app is hidden and a static “Larger screen required” screen is shown (CSS-only in `layout.tsx` — no mobile layout).
+- **Desktop shell:** full-width content; no `max-w-*` centering on the main workspace. Horizontal padding: `px-6` (`xl:px-8`).
+- **Shared form controls:** use `Input` and `Select` from `components/ui/` with classes from `lib/form-control.ts` for consistent height, border, and focus rings.
+
 ## Component ownership
 
 - **`components/`** — presentational, props-in. Group by domain: `decision-queue`, `risk-summary`, `case-summary`, `audit-timeline`, `ui`.

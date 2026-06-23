@@ -5,14 +5,12 @@ import { Panel } from "@/components/ui/panel";
 export function AuditTimeline({ entries }: { entries: AuditEntry[] }) {
   return (
     <Panel title="Audit history">
-      <ol className="space-y-3" aria-label="Audit history">
+      <ol className="space-y-4" aria-label="Audit history">
         {entries.map((entry) => (
-          <li key={entry.id} className="border-b border-slate-100 pb-3 last:border-0">
-            <div className="flex flex-wrap items-baseline gap-2">
-              <span className="text-sm font-medium text-slate-900">{entry.action}</span>
-              <span className="text-xs text-slate-500">{formatDate(entry.timestamp)}</span>
-            </div>
-            <p className="text-xs text-slate-500">By {entry.actor}</p>
+          <li key={entry.id} className="border-b border-slate-100 pb-4 last:border-0 last:pb-0">
+            <time className="text-xs text-slate-500">{formatDate(entry.timestamp)}</time>
+            <p className="mt-0.5 text-sm font-medium text-slate-900">{entry.action}</p>
+            <p className="mt-0.5 text-xs text-slate-500">By {entry.actor}</p>
             {entry.justification ? (
               <p className="mt-1 text-sm text-slate-700">{entry.justification}</p>
             ) : null}
