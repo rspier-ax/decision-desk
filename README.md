@@ -18,7 +18,15 @@ Enterprise risk-review workspace for analyzing flagged applications, reviewing r
 
 Dashboard → filter queue → open case → generate summary → record decision → audit history updates.
 
-![DecisionDesk workflow](./docs/assets/demo-flow.gif)
+<p align="center">
+  <a href="./docs/assets/demo-flow.gif">
+    <img
+      src="https://github.com/rspier-ax/decision-desk/raw/main/docs/assets/demo-flow.gif"
+      alt="DecisionDesk demo workflow: filter queue, open case, generate summary, record decision"
+      width="1000"
+    />
+  </a>
+</p>
 
 ## Architecture
 
