@@ -51,7 +51,7 @@ See [docs/README.md](./docs/README.md) for architecture notes and ADRs.
 
 ### Demo controls
 
-<img src="./docs/assets/demo-controls.jpg" alt="DecisionDesk demo controls popover with scenario and simulation settings" width="100%" />
+<img src="./docs/assets/demo-controls.jpg" alt="DecisionDesk demo controls popover with scenario and simulation settings" width="420" />
 
 ## Tech stack
 
