@@ -1,18 +1,49 @@
 import { buildCaseSummary } from "@/mocks/summary-templates";
-import { getCaseFromStore } from "@/mocks/store";
+import {
+  applySimulatedLatency,
+  deleteGeneratedSummary,
+  exportSession,
+  getCaseFromStore,
+  getGeneratedSummary,
+  getSimSettings,
+  saveGeneratedSummary,
+} from "@/mocks/store";
+import type { CaseSummary } from "@/services/risk-provider/types";
 
 function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ caseId: string }> },
+) {
+  const { caseId } = await params;
+  const summary = getGeneratedSummary(caseId);
+  if (!summary) {
+    return new Response(JSON.stringify({ error: "Summary not found" }), { status: 404 });
+  }
+  return Response.json(summary);
+}
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ caseId: string }> },
+) {
+  const { caseId } = await params;
+  return Response.json({ session: deleteGeneratedSummary(caseId) });
 }
 
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ caseId: string }> },
 ) {
+  await applySimulatedLatency();
   const { caseId } = await params;
   const { searchParams } = new URL(request.url);
+  const sim = getSimSettings();
 
-  if (searchParams.get("simulate") === "summary_error") {
+  if (sim.summaryService === "unavailable" || searchParams.get("simulate") === "summary_error") {
     return new Response(JSON.stringify({ error: "Summary service unavailable" }), {
       status: 503,
       headers: { "Content-Type": "application/json" },
@@ -22,6 +53,11 @@ export async function POST(
   const caseDetail = getCaseFromStore(caseId);
   if (!caseDetail) {
     return new Response(JSON.stringify({ error: "Case not found" }), { status: 404 });
+  }
+
+  const existing = getGeneratedSummary(caseId);
+  if (existing && searchParams.get("force") !== "true") {
+    return Response.json({ session: saveGeneratedSummary(caseId, existing), summary: existing });
   }
 
   const summary = buildCaseSummary(
@@ -34,7 +70,14 @@ export async function POST(
     `${caseDetail.suggestedAction} — pending analyst confirmation`,
   );
 
+  const streamOnly = searchParams.get("stream") !== "false";
+  if (!streamOnly) {
+    saveGeneratedSummary(caseId, summary);
+    return Response.json({ summary });
+  }
+
   const encoder = new TextEncoder();
+  const streamDelay = sim.apiLatency === "slow" ? 700 : 400;
   const stream = new ReadableStream({
     async start(controller) {
       const sections = [
@@ -46,11 +89,10 @@ export async function POST(
       ];
 
       for (const section of sections) {
-        await delay(400);
-        controller.enqueue(
-          encoder.encode(`data: ${JSON.stringify(section)}\n\n`),
-        );
+        await delay(streamDelay);
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(section)}\n\n`));
       }
+      saveGeneratedSummary(caseId, summary as CaseSummary);
       controller.close();
     },
   });

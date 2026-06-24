@@ -60,11 +60,12 @@ Components must not call `fetch` directly. Features use `riskProvider` or dedica
 
 ## Trade-offs for demo delivery
 
-- In-memory store: simple deploy, no persistence across cold starts.
+- In-memory server store with **client hydration**: `DemoProvider` restores versioned snapshots from `localStorage` on boot (`decision-desk-demo:v1`). Deterministic scenario seeds; no random data generation.
 - Hand-rolled UI primitives: full control over density; more a11y work than a component library.
 - Simulated summary stream: no external LLM cost; provider interface documented for swap-in.
 
 ## References
 
 - [decisions/0001-risk-provider-abstraction.md](../decisions/0001-risk-provider-abstraction.md)
+- [decisions/0002-demo-session-persistence.md](../decisions/0002-demo-session-persistence.md)
 - [frontend-standards.md](../frontend-standards.md)

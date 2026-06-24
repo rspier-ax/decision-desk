@@ -1,13 +1,18 @@
 "use client";
 
 import { formatDate } from "@/lib/format";
+import { useCaseDetail } from "@/features/cases/hooks/use-case-detail";
 import { useCaseSummaryStream } from "@/features/cases/hooks/use-case-summary-stream";
 import { Button } from "@/components/ui/button";
 import { Panel } from "@/components/ui/panel";
 import { ErrorState, LoadingState } from "@/components/ui/state-messages";
 
 export function CaseSummaryPanel({ caseId }: { caseId: string }) {
-  const { status, summary, error, generate, reset } = useCaseSummaryStream(caseId);
+  const { data: caseDetail } = useCaseDetail(caseId);
+  const { status, summary, error, generate, reset } = useCaseSummaryStream(
+    caseId,
+    caseDetail?.generatedSummary,
+  );
   const isStreaming = status === "streaming";
 
   return (

@@ -10,7 +10,7 @@ describe("AppShell", () => {
       </AppShell>,
     );
 
-    expect(screen.getByText("Demo environment")).toBeInTheDocument();
+    expect(screen.getByText("Demo controls")).toBeInTheDocument();
     expect(screen.getByText("Dashboard content")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "DecisionDesk" })).toBeInTheDocument();
 

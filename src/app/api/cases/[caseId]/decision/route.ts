@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
+import { applySimulatedLatency, submitDecisionToStore } from "@/mocks/store";
 import { decisionInputSchema } from "@/schemas/case.schema";
-import { submitDecisionToStore } from "@/mocks/store";
 
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ caseId: string }> },
 ) {
+  await applySimulatedLatency();
   const { caseId } = await params;
   const body = await request.json();
   const parsed = decisionInputSchema.safeParse({ ...body, caseId });

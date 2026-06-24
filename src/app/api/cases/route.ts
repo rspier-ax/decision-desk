@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { CaseFilters } from "@/services/risk-provider/types";
 import type { RiskLevel, CaseStatus } from "@/services/risk-provider/types";
 import {
+  applySimulatedLatency,
   getDashboardMetricsFromStore,
   listCasesFromStore,
 } from "@/mocks/store";
@@ -30,6 +31,7 @@ function parseFilters(searchParams: URLSearchParams): CaseFilters {
 }
 
 export async function GET(request: Request) {
+  await applySimulatedLatency();
   const { searchParams } = new URL(request.url);
 
   if (searchParams.get("metrics") === "true") {

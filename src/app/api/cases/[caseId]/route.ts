@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { getCaseFromStore } from "@/mocks/store";
+import { applySimulatedLatency, getCaseFromStore, getGeneratedSummary } from "@/mocks/store";
 
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ caseId: string }> },
 ) {
+  await applySimulatedLatency();
   const { caseId } = await params;
   const caseDetail = getCaseFromStore(caseId);
 
@@ -12,5 +13,9 @@ export async function GET(
     return NextResponse.json({ error: "Case not found" }, { status: 404 });
   }
 
-  return NextResponse.json(caseDetail);
+  const generatedSummary = getGeneratedSummary(caseId);
+  return NextResponse.json({
+    ...caseDetail,
+    generatedSummary: generatedSummary ?? null,
+  });
 }
