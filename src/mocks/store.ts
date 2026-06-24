@@ -155,7 +155,8 @@ export function saveGeneratedSummary(caseId: string, summary: CaseSummary): Demo
 
 export function deleteGeneratedSummary(caseId: string): DemoSessionState {
   const session = getSession();
-  const { [caseId]: _removed, ...generatedSummaries } = session.generatedSummaries;
+  const generatedSummaries = { ...session.generatedSummaries };
+  delete generatedSummaries[caseId];
   setSession({ ...session, generatedSummaries });
   return exportSession();
 }

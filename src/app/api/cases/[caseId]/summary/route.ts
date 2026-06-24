@@ -2,7 +2,6 @@ import { buildCaseSummary } from "@/mocks/summary-templates";
 import {
   applySimulatedLatency,
   deleteGeneratedSummary,
-  exportSession,
   getCaseFromStore,
   getGeneratedSummary,
   getSimSettings,

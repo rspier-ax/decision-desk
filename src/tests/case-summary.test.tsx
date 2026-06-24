@@ -31,6 +31,9 @@ describe("CaseSummaryPanel", () => {
         if (url.includes("/summary") && init?.method === "POST") {
           return Promise.resolve({ ok: true, body: stream });
         }
+        if (url.includes("/summary")) {
+          return Promise.resolve({ ok: false });
+        }
         if (url.includes("/api/cases/")) {
           return Promise.resolve({
             ok: true,
@@ -84,7 +87,10 @@ describe("CaseSummaryPanel", () => {
       if (url.includes("/summary") && init?.method === "POST") {
         return Promise.resolve({ ok: true, body: stream });
       }
-      if (url.includes("/api/cases/") && !url.includes("/summary")) {
+      if (url.includes("/summary")) {
+        return Promise.resolve({ ok: false });
+      }
+      if (url.includes("/api/cases/")) {
         return Promise.resolve({
           ok: true,
           json: async () => ({
