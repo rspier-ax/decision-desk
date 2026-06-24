@@ -16,7 +16,7 @@ The mock API uses an in-memory server store. Browser refresh clears server memor
 
 ## Decision
 
-1. **Versioned client snapshot** — persist `DemoSessionState` in `localStorage` under `decision-desk-demo:v1`, validated with Zod on read.
+1. **Versioned client snapshot** — persist `DemoSessionState` in `localStorage` under `decision-desk-demo:v2`, validated with Zod on read.
 2. **Hydrate on boot** — `DemoProvider` reads localStorage and `PUT /api/demo/session` before enabling data queries.
 3. **Immutable seeds** — scenario modules export frozen datasets; runtime always works on deep clones via `structuredClone`.
 4. **Persist after mutations** — decisions and completed summaries trigger `GET /api/demo/session` → localStorage write.

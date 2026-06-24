@@ -4,7 +4,7 @@ Read **`docs/README.md`** for architecture, standards, and ADRs.
 
 ## Product
 
-Fictional **risk-review console** for analysts working flagged applications (fraud / credit-risk). Demo data only — shell shows **Demo environment**.
+Fictional **risk-review console** for analysts working flagged applications (fraud / credit-risk). Demo data only — header includes **Demo controls** for scenarios and simulation.
 
 Workflow: dashboard → queue → case detail → structured case summary → decision with justification → append-only audit trail.
 
@@ -75,4 +75,4 @@ Playwright: `npx playwright install chromium` on first run.
 | [docs/engineering-practice.md](./docs/engineering-practice.md) | Implementation order |
 | [docs/decisions/](./docs/decisions/) | ADRs |
 
-Area-specific rules may live in `.cursor/rules/` as the project grows.
+Area-specific rules may live under `docs/` as the repository grows.

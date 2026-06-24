@@ -16,6 +16,11 @@
 
 - [decisions/README.md](./decisions/README.md) — index
 - [decisions/0001-risk-provider-abstraction.md](./decisions/0001-risk-provider-abstraction.md) — RiskProvider interface
+- [decisions/0002-demo-session-persistence.md](./decisions/0002-demo-session-persistence.md) — Demo session persistence
+
+## Assets
+
+- [assets/](./assets/) — README screenshots and demo GIF (not used by the running app)
 
 ## Repository guide
 

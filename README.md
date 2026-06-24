@@ -1,44 +1,78 @@
 # DecisionDesk
 
-> Fictional risk-review workspace for exploring frontend architecture, operational decision workflows, auditability, and responsible integration of automated analysis.
+Enterprise risk-review workspace for analyzing flagged applications, reviewing risk signals, and recording auditable decisions.
 
-DecisionDesk is a console used by analysts to review applications flagged by an automated fraud and credit-risk system. All people, accounts, and metrics are fictional demo data.
+> **Demonstration project.** All applicants, accounts, metrics, and case IDs are fictional. This is not a production system and is not affiliated with any credit bureau or fraud vendor.
 
-## Problem
+![DecisionDesk dashboard](./docs/assets/dashboard.jpg)
 
-Operational teams need a single place to inspect flagged applications, understand contributing risk signals, record decisions with justification, and maintain an audit trail. DecisionDesk models that workflow without coupling the UI to a specific vendor API.
+## Key capabilities
 
-## Main workflow
+- **Review dashboard** — filter and sort a decision queue with risk, status, assignee, and SLA context.
+- **Case review** — inspect signals, applicant data, event timeline, and model rationale.
+- **Structured summary** — simulated streaming summary with contributing signals and suggested next steps.
+- **Auditable decisions** — approve, reject, or escalate with required justification and append-only audit history.
+- **Demo controls** — load deterministic scenarios, inject incoming cases, reset data, and simulate latency or service failures.
 
-1. Analyst opens the review dashboard and filters the decision queue.
-2. Analyst opens a case and reviews identity data, risk signals, and event history.
-3. Analyst generates a structured case summary (simulated streaming).
-4. Analyst approves, rejects, or escalates with required justification.
-5. The system appends the action to the audit timeline.
+## Demo workflow
 
-## Structure
+Dashboard → filter queue → open case → generate summary → record decision → audit history updates.
+
+![DecisionDesk workflow](./docs/assets/demo-flow.gif)
+
+## Architecture
 
 ```
-decision-desk/
-├── src/
-│   ├── app/                 # Next.js App Router pages + API routes
-│   ├── components/          # Presentational UI by domain area
-│   ├── features/            # Hooks and feature composition
-│   ├── services/risk-provider/  # Provider abstraction + mock client
-│   ├── schemas/             # Zod validation
-│   └── mocks/               # Fictional demo data
-├── docs/                    # Architecture and engineering standards
-└── e2e/                     # Playwright critical path
+Browser UI (React)
+    ↓ hooks / TanStack Query
+RiskProvider (MockRiskProvider)
+    ↓ fetch
+Next.js API routes
+    ↓
+In-memory demo session store (hydrated from localStorage)
 ```
+
+- **UI** — presentational components in `src/components/`; feature hooks in `src/features/`.
+- **Domain** — canonical types in `src/services/risk-provider/types.ts`, validated with Zod at API boundaries.
+- **Integration** — `RiskProvider` abstraction; swap `MockRiskProvider` for a real HTTP client without UI changes.
+- **Demo session** — versioned snapshot in `localStorage`, synced to the server store on boot and after mutations. Scenario seeds use relative SLA offsets materialized once on load/reset.
+
+See [docs/README.md](./docs/README.md) for architecture notes and ADRs.
+
+## Screenshots
+
+### Review dashboard
+
+<img src="./docs/assets/dashboard.jpg" alt="DecisionDesk review dashboard with queue filters and SLA indicators" width="100%" />
+
+### Case review
+
+<img src="./docs/assets/case-detail.jpg" alt="DecisionDesk case review screen with signals, summary, and decision form" width="100%" />
+
+### Demo controls
+
+<img src="./docs/assets/demo-controls.jpg" alt="DecisionDesk demo controls popover with scenario and simulation settings" width="100%" />
+
+## Tech stack
+
+| Layer | Choice |
+|-------|--------|
+| Framework | Next.js 16 (App Router), React 19, TypeScript strict |
+| Styling | Tailwind CSS v4 |
+| Data fetching | TanStack Query |
+| Forms | React Hook Form + Zod |
+| Tests | Vitest, React Testing Library, Playwright |
 
 ## Run locally
+
+**Requirements:** Node.js ≥ 22, viewport ≥ **768px** (tablet/desktop layout only; no mobile shell).
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Supported at viewport ≥768px; no mobile layout.
+Open [http://localhost:3000](http://localhost:3000).
 
 ## Scripts
 
@@ -49,42 +83,34 @@ Open [http://localhost:3000](http://localhost:3000). Supported at viewport ≥76
 | `npm run typecheck` | TypeScript strict check |
 | `npm run lint` | ESLint |
 | `npm run test` | Vitest unit/component tests |
-| `npm run test:e2e` | Playwright E2E |
-
-## Architecture overview
-
-- **UI** — React components and feature hooks; no direct vendor API calls.
-- **Domain** — Typed models in `src/services/risk-provider/types.ts`, validated with Zod.
-- **Integration** — `RiskProvider` interface; `MockRiskProvider` calls Next.js API routes backed by an in-memory store.
-
-TanStack Query manages remote state (cases, metrics, mutations). Case summary streaming uses a dedicated SSE route, separate from the synchronous provider methods.
-
-See [docs/README.md](./docs/README.md) for full documentation.
+| `npm run test:e2e` | Playwright end-to-end tests |
 
 ## Test strategy
 
-- **Vitest + RTL** — schemas, queue filters, decision form validation, summary streaming UI.
-- **Playwright** — dashboard → case → summary → approve with justification → audit entry.
+- **Unit / component** — schemas, queue sorting, demo session storage, summary streaming, demo controls.
+- **E2E** — dashboard filters → case detail → generate summary → submit decision → audit entry.
 
 ## Trade-offs
 
 | Choice | Rationale |
 |--------|-----------|
-| Mock API + in-memory store | Deployable demo without DB; realistic client/server split |
-| RiskProvider abstraction | Swap mocks for real decisioning APIs without UI refactors |
+| Mock API + session store | Deployable demo without a database; realistic client/server split |
+| RiskProvider abstraction | Swap mocks for internal decisioning APIs without UI refactors |
+| Relative SLA seeds | Scenarios stay realistic over time without fixed dates aging out |
+| Simulated summary stream | Demonstrates progressive loading without a paid LLM dependency |
 | No auth in demo | Focus on analyst workflow; production would use OIDC/SAML |
-| Simulated summary stream | Demonstrates progressive loading without paid LLM API |
 
-## Known limitations
+## Limitations
 
-- Data resets on server cold start (Vercel serverless).
-- Single hardcoded analyst identity (`analyst.jdoe`).
-- No persistence, RBAC, or real fraud engine integration.
+- **Viewport** — minimum supported width is **768px**; smaller screens show an unsupported-viewport message.
+- **Persistence** — demo state survives refresh via `localStorage`, but serverless cold starts reset the in-memory store until the client re-hydrates.
+- **Identity** — single hardcoded analyst (`analyst.jdoe`); no RBAC.
+- **Scope** — no real fraud engine, credit bureau, or production PII.
 
 ## Production considerations
 
 - Replace `MockRiskProvider` with an HTTP implementation against internal APIs.
-- Persist cases and append-only audit log in operational database.
+- Persist cases and append-only audit log in an operational database.
 - Authenticate analysts; bind `analystId` from session claims.
 - Plug a real summary provider behind the same structured response contract.
 
@@ -95,6 +121,10 @@ See [docs/README.md](./docs/README.md) for full documentation.
 | [docs/README.md](./docs/README.md) | Documentation index |
 | [docs/architecture/ARCHITECTURE.md](./docs/architecture/ARCHITECTURE.md) | Stack, boundaries, trade-offs |
 | [docs/frontend-standards.md](./docs/frontend-standards.md) | Component and testing standards |
-| [docs/engineering-practice.md](./docs/engineering-practice.md) | Implementation and review workflow |
-| [AGENTS.md](./AGENTS.md) | Repository guide — stack, boundaries, validation |
 | [docs/decisions/0001-risk-provider-abstraction.md](./docs/decisions/0001-risk-provider-abstraction.md) | ADR: RiskProvider |
+| [docs/decisions/0002-demo-session-persistence.md](./docs/decisions/0002-demo-session-persistence.md) | ADR: Demo session persistence |
+| [AGENTS.md](./AGENTS.md) | Repository guide for contributors |
+
+## License
+
+[MIT](./LICENSE)
