@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useDemoOptional } from "@/features/demo/demo-provider";
 import { queryKeys } from "@/lib/query-keys";
@@ -12,42 +12,66 @@ type StreamState = {
   error?: string;
 };
 
+function emptyIdle(): StreamState {
+  return { status: "idle", summary: {} };
+}
+
+function completeState(summary: Partial<CaseSummary>): StreamState {
+  return { status: "complete", summary };
+}
+
+function resolveDisplayState(
+  interaction: StreamState,
+  initialSummary: CaseSummary | null | undefined,
+  persistedSummary: CaseSummary | null,
+  dismissedPersisted: boolean,
+): StreamState {
+  if (interaction.status === "streaming" || interaction.status === "error") {
+    return interaction;
+  }
+
+  if (dismissedPersisted) {
+    if (interaction.status === "complete" && interaction.summary.executiveSummary) {
+      return interaction;
+    }
+    return emptyIdle();
+  }
+
+  if (initialSummary) {
+    return completeState(initialSummary);
+  }
+
+  if (persistedSummary) {
+    return completeState(persistedSummary);
+  }
+
+  if (interaction.status === "complete") {
+    return interaction;
+  }
+
+  return emptyIdle();
+}
+
 export function useCaseSummaryStream(caseId: string, initialSummary?: CaseSummary | null) {
   const demo = useDemoOptional();
   const queryClient = useQueryClient();
-  const clearedRef = useRef(false);
-  const [state, setState] = useState<StreamState>(() =>
-    initialSummary
-      ? { status: "complete", summary: initialSummary }
-      : { status: "idle", summary: {} },
+
+  const [trackedCaseId, setTrackedCaseId] = useState(caseId);
+  const [interaction, setInteraction] = useState<StreamState>(() =>
+    initialSummary ? completeState(initialSummary) : emptyIdle(),
   );
+  const [persistedSummary, setPersistedSummary] = useState<CaseSummary | null>(null);
+  const [dismissedPersisted, setDismissedPersisted] = useState(false);
+
+  if (trackedCaseId !== caseId) {
+    setTrackedCaseId(caseId);
+    setInteraction(initialSummary ? completeState(initialSummary) : emptyIdle());
+    setPersistedSummary(null);
+    setDismissedPersisted(false);
+  }
 
   useEffect(() => {
-    clearedRef.current = false;
-    setState(
-      initialSummary
-        ? { status: "complete", summary: initialSummary }
-        : { status: "idle", summary: {} },
-    );
-  }, [caseId]);
-
-  useEffect(() => {
-    if (clearedRef.current) {
-      if (!initialSummary) {
-        clearedRef.current = false;
-      }
-      return;
-    }
-
-    if (initialSummary) {
-      setState((current) =>
-        current.status === "streaming" ? current : { status: "complete", summary: initialSummary },
-      );
-    }
-  }, [initialSummary]);
-
-  useEffect(() => {
-    if (initialSummary || clearedRef.current) return;
+    if (initialSummary || dismissedPersisted) return;
 
     let cancelled = false;
 
@@ -56,8 +80,8 @@ export function useCaseSummaryStream(caseId: string, initialSummary?: CaseSummar
         const res = await fetch(`/api/cases/${encodeURIComponent(caseId)}/summary`);
         if (!res.ok) return;
         const summary = (await res.json()) as CaseSummary;
-        if (!cancelled) {
-          setState({ status: "complete", summary });
+        if (!cancelled && summary.executiveSummary) {
+          setPersistedSummary(summary);
         }
       } catch {
         // ignore — no persisted summary
@@ -68,13 +92,20 @@ export function useCaseSummaryStream(caseId: string, initialSummary?: CaseSummar
     return () => {
       cancelled = true;
     };
-  }, [caseId, initialSummary]);
+  }, [caseId, initialSummary, dismissedPersisted]);
+
+  const displayState = useMemo(
+    () => resolveDisplayState(interaction, initialSummary, persistedSummary, dismissedPersisted),
+    [interaction, initialSummary, persistedSummary, dismissedPersisted],
+  );
 
   const generate = useCallback(
     async (simulateError = false) => {
-      const forceRegenerate = state.status === "complete" || state.status === "error";
-      clearedRef.current = false;
-      setState({ status: "streaming", summary: {} });
+      const forceRegenerate =
+        displayState.status === "complete" || displayState.status === "error";
+
+      setDismissedPersisted(false);
+      setInteraction({ status: "streaming", summary: {} });
 
       try {
         const params = new URLSearchParams();
@@ -118,27 +149,28 @@ export function useCaseSummaryStream(caseId: string, initialSummary?: CaseSummar
               (summary as Record<string, unknown>)[payload.key] = payload.value;
             }
 
-            setState({ status: "streaming", summary: { ...summary } });
+            setInteraction({ status: "streaming", summary: { ...summary } });
           }
         }
 
-        setState({ status: "complete", summary: summary as CaseSummary });
+        setInteraction({ status: "complete", summary: summary as CaseSummary });
         await demo?.persistSession();
         await queryClient.invalidateQueries({ queryKey: queryKeys.case(caseId) });
       } catch (error) {
-        setState({
+        setInteraction({
           status: "error",
           summary: {},
           error: error instanceof Error ? error.message : "Unknown error",
         });
       }
     },
-    [caseId, demo, queryClient, state.status],
+    [caseId, demo, displayState.status, queryClient],
   );
 
   const reset = useCallback(async () => {
-    clearedRef.current = true;
-    setState({ status: "idle", summary: {} });
+    setDismissedPersisted(true);
+    setPersistedSummary(null);
+    setInteraction(emptyIdle());
 
     try {
       await fetch(`/api/cases/${encodeURIComponent(caseId)}/summary`, { method: "DELETE" });
@@ -150,9 +182,9 @@ export function useCaseSummaryStream(caseId: string, initialSummary?: CaseSummar
   }, [caseId, demo, queryClient]);
 
   return {
-    status: state.status,
-    summary: state.summary,
-    error: state.error,
+    status: displayState.status,
+    summary: displayState.summary,
+    error: interaction.error,
     generate,
     reset,
   };

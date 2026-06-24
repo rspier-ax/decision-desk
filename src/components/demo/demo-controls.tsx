@@ -114,12 +114,6 @@ export function DemoControls() {
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (demo?.session?.scenario) {
-      setSelectedScenario(demo.session.scenario);
-    }
-  }, [demo?.session?.scenario]);
-
-  useEffect(() => {
     if (!open) return;
     function onPointerDown(event: MouseEvent) {
       if (!rootRef.current?.contains(event.target as Node)) {
