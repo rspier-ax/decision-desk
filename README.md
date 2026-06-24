@@ -1,5 +1,7 @@
 # DecisionDesk
 
+![CI](https://github.com/rspier-ax/decision-desk/actions/workflows/ci.yml/badge.svg)
+
 Enterprise risk-review workspace for analyzing flagged applications, reviewing risk signals, and recording auditable decisions.
 
 > **Demonstration project.** All applicants, accounts, metrics, and case IDs are fictional. This is not a production system and is not affiliated with any credit bureau or fraud vendor.
@@ -131,7 +133,6 @@ Open [http://localhost:3000](http://localhost:3000).
 | [docs/frontend-standards.md](./docs/frontend-standards.md) | Component and testing standards |
 | [docs/decisions/0001-risk-provider-abstraction.md](./docs/decisions/0001-risk-provider-abstraction.md) | ADR: RiskProvider |
 | [docs/decisions/0002-demo-session-persistence.md](./docs/decisions/0002-demo-session-persistence.md) | ADR: Demo session persistence |
-| [AGENTS.md](./AGENTS.md) | Repository guide for contributors |
 
 ## License
 
