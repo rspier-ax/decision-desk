@@ -43,7 +43,7 @@ UI and features call the provider (or its hooks); do not fetch vendor APIs from 
 
 **Types** — `src/services/risk-provider/types.ts` is canonical; validate at boundaries with `src/schemas/`.
 
-**Persistence (demo)** — in-memory store in `src/mocks/store.ts`, accessed only from `src/app/api/`.
+**Persistence (demo)** — session store in `src/mocks/store.ts` (API only), hydrated from versioned `localStorage` via **Demo controls** on the Demo environment badge. See ADR 0002.
 
 ## Quality expectations
 

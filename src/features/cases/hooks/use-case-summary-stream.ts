@@ -1,6 +1,9 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useDemoOptional } from "@/features/demo/demo-provider";
+import { queryKeys } from "@/lib/query-keys";
 import type { CaseSummary } from "@/services/risk-provider/types";
 
 type StreamState = {
@@ -9,18 +12,76 @@ type StreamState = {
   error?: string;
 };
 
-export function useCaseSummaryStream(caseId: string) {
-  const [state, setState] = useState<StreamState>({
-    status: "idle",
-    summary: {},
-  });
+export function useCaseSummaryStream(caseId: string, initialSummary?: CaseSummary | null) {
+  const demo = useDemoOptional();
+  const queryClient = useQueryClient();
+  const clearedRef = useRef(false);
+  const [state, setState] = useState<StreamState>(() =>
+    initialSummary
+      ? { status: "complete", summary: initialSummary }
+      : { status: "idle", summary: {} },
+  );
+
+  useEffect(() => {
+    clearedRef.current = false;
+    setState(
+      initialSummary
+        ? { status: "complete", summary: initialSummary }
+        : { status: "idle", summary: {} },
+    );
+  }, [caseId]);
+
+  useEffect(() => {
+    if (clearedRef.current) {
+      if (!initialSummary) {
+        clearedRef.current = false;
+      }
+      return;
+    }
+
+    if (initialSummary) {
+      setState((current) =>
+        current.status === "streaming" ? current : { status: "complete", summary: initialSummary },
+      );
+    }
+  }, [initialSummary]);
+
+  useEffect(() => {
+    if (initialSummary || clearedRef.current) return;
+
+    let cancelled = false;
+
+    async function loadPersisted() {
+      try {
+        const res = await fetch(`/api/cases/${encodeURIComponent(caseId)}/summary`);
+        if (!res.ok) return;
+        const summary = (await res.json()) as CaseSummary;
+        if (!cancelled) {
+          setState({ status: "complete", summary });
+        }
+      } catch {
+        // ignore — no persisted summary
+      }
+    }
+
+    void loadPersisted();
+    return () => {
+      cancelled = true;
+    };
+  }, [caseId, initialSummary]);
 
   const generate = useCallback(
     async (simulateError = false) => {
+      const forceRegenerate = state.status === "complete" || state.status === "error";
+      clearedRef.current = false;
       setState({ status: "streaming", summary: {} });
 
       try {
-        const url = `/api/cases/${encodeURIComponent(caseId)}/summary${simulateError ? "?simulate=summary_error" : ""}`;
+        const params = new URLSearchParams();
+        if (simulateError) params.set("simulate", "summary_error");
+        if (forceRegenerate) params.set("force", "true");
+        const query = params.toString();
+        const url = `/api/cases/${encodeURIComponent(caseId)}/summary${query ? `?${query}` : ""}`;
         const res = await fetch(url, { method: "POST" });
 
         if (!res.ok) {
@@ -62,6 +123,8 @@ export function useCaseSummaryStream(caseId: string) {
         }
 
         setState({ status: "complete", summary: summary as CaseSummary });
+        await demo?.persistSession();
+        await queryClient.invalidateQueries({ queryKey: queryKeys.case(caseId) });
       } catch (error) {
         setState({
           status: "error",
@@ -70,12 +133,27 @@ export function useCaseSummaryStream(caseId: string) {
         });
       }
     },
-    [caseId],
+    [caseId, demo, queryClient, state.status],
   );
 
-  const reset = useCallback(() => {
+  const reset = useCallback(async () => {
+    clearedRef.current = true;
     setState({ status: "idle", summary: {} });
-  }, []);
 
-  return { ...state, generate, reset };
+    try {
+      await fetch(`/api/cases/${encodeURIComponent(caseId)}/summary`, { method: "DELETE" });
+      await demo?.persistSession();
+      await queryClient.invalidateQueries({ queryKey: queryKeys.case(caseId) });
+    } catch {
+      // local state already cleared
+    }
+  }, [caseId, demo, queryClient]);
+
+  return {
+    status: state.status,
+    summary: state.summary,
+    error: state.error,
+    generate,
+    reset,
+  };
 }

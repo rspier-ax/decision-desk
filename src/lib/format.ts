@@ -7,16 +7,16 @@ export function formatDate(iso: string): string {
   }).format(new Date(iso));
 }
 
-export function formatRelativeSla(iso: string): string {
-  const diff = new Date(iso).getTime() - Date.now();
+export function formatRelativeSla(iso: string, now: number = Date.now()): string {
+  const diff = new Date(iso).getTime() - now;
   const hours = Math.round(diff / (1000 * 60 * 60));
   if (hours < 0) return `${Math.abs(hours)}h overdue`;
   if (hours < 24) return `${hours}h remaining`;
   return `${Math.round(hours / 24)}d remaining`;
 }
 
-export function isSlaOverdue(iso: string): boolean {
-  return new Date(iso).getTime() < Date.now();
+export function isSlaOverdue(iso: string, now: number = Date.now()): boolean {
+  return new Date(iso).getTime() < now;
 }
 
 export function formatPercent(value: number): string {

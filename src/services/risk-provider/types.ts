@@ -73,6 +73,7 @@ export interface RiskCaseDetail extends RiskCase {
   timeline: TimelineEvent[];
   auditHistory: AuditEntry[];
   rulesetVersion: string;
+  generatedSummary?: CaseSummary | null;
 }
 
 export interface DecisionInput {

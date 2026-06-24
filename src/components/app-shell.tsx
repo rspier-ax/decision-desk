@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { DemoControls } from "@/components/demo/demo-controls";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -29,9 +32,7 @@ export function AppShell({ children }: AppShellProps) {
               </ul>
             </nav>
           </div>
-          <span className="rounded-sm border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-900">
-            Demo environment
-          </span>
+          <DemoControls />
         </div>
       </header>
       <main id="main-content" className="w-full flex-1 px-8 py-6 xl:px-10">

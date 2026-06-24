@@ -1,61 +1,7 @@
 import type { RiskCaseDetail } from "@/services/risk-provider/types";
+import { buildCaseDetail } from "@/mocks/demo/builders";
 
-const baseTimeline = (caseId: string) => [
-  {
-    id: `${caseId}-tl-1`,
-    timestamp: "2026-06-20T09:14:22Z",
-    type: "system" as const,
-    title: "Application submitted",
-    detail: "Online channel — personal loan request",
-    actor: "system",
-  },
-  {
-    id: `${caseId}-tl-2`,
-    timestamp: "2026-06-20T09:14:45Z",
-    type: "system" as const,
-    title: "Automated risk scoring completed",
-    detail: "Ruleset fraud-rules-v3.2.1",
-    actor: "decision_engine",
-  },
-  {
-    id: `${caseId}-tl-3`,
-    timestamp: "2026-06-20T09:15:02Z",
-    type: "system" as const,
-    title: "Queued for manual review",
-    detail: "Threshold exceeded for identity signals",
-    actor: "decision_engine",
-  },
-];
-
-const baseAudit = (caseId: string) => [
-  {
-    id: `${caseId}-audit-1`,
-    timestamp: "2026-06-20T09:15:02Z",
-    action: "Case created",
-    actor: "system",
-    metadata: { source: "decision_engine" },
-  },
-];
-
-function detail(
-  base: Omit<
-    RiskCaseDetail,
-    "signals" | "timeline" | "auditHistory" | "decisionRationale" | "rulesetVersion"
-  >,
-  signals: RiskCaseDetail["signals"],
-  rationale: string,
-  extraTimeline: RiskCaseDetail["timeline"] = [],
-  extraAudit: RiskCaseDetail["auditHistory"] = [],
-): RiskCaseDetail {
-  return {
-    ...base,
-    signals,
-    decisionRationale: rationale,
-    timeline: [...baseTimeline(base.id), ...extraTimeline],
-    auditHistory: [...baseAudit(base.id), ...extraAudit],
-    rulesetVersion: "fraud-rules-v3.2.1",
-  };
-}
+const detail = buildCaseDetail;
 
 export const MOCK_CASES: RiskCaseDetail[] = [
   detail(
